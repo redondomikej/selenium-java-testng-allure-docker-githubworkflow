@@ -15,7 +15,7 @@ public class BaseTest {
         try {
             String seleniumUrl = System.getenv("SELENIUM_URL");
             if (seleniumUrl == null || seleniumUrl.isEmpty()) {
-                seleniumUrl = "http://host.docker.internal:4444/wd/hub"; // default for local
+                seleniumUrl = "http://selenium:4444/wd/hub"; // default for local
             }
 
             switch (browserType.toLowerCase()) {

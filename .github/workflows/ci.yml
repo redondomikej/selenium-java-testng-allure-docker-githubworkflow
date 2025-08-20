@@ -29,11 +29,10 @@ jobs:
       # 3️⃣ Build Maven test Docker image
       - name: Build Docker image
         run: |
-          docker build -t selenium-java-test .
+          docker build -t maven-selenium-test .
 
       # 4️⃣ Run tests pointing to Selenium service
       - name: Run tests
-        run: |
-          docker run --rm \
-            --env SELENIUM_URL=http://selenium:4444/wd/hub \
-            selenium-java-test
+        run: mvn test -DSELENIUM_URL=http://selenium:4444/wd/hub
+        env:
+        SELENIUM_URL: http://selenium:4444/wd/hub
