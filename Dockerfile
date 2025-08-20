@@ -6,24 +6,33 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean install -DskipTests
 
-# Stage 2: Run with Maven
+# Stage 2: Run with Maven and browsers
 FROM maven:3.9.9-eclipse-temurin-21
-
 WORKDIR /app
 
-# Install Chrome + ChromeDriver with matching versions
-RUN apt-get update && apt-get install -y wget curl unzip gnupg \
+# Install Chrome and ChromeDriver
+RUN apt-get update && apt-get install -y wget unzip gnupg2 curl \
     && wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
     && apt-get update && apt-get install -y google-chrome-stable \
-    && CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1) \
-    && DRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION}") \
-    && curl -s -L "https://chromedriver.storage.googleapis.com/${DRIVER_VERSION}/chromedriver_linux64.zip" -o /tmp/chromedriver.zip \
+    && CHROMEDRIVER_VERSION=$(curl -sS chromedriver.storage.googleapis.com/LATEST_RELEASE) \
+    && wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
     && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
+    && chmod +x /usr/local/bin/chromedriver \
     && rm /tmp/chromedriver.zip \
-    && apt-get install -y fonts-liberation libappindicator3-1 libasound2 libatk-bridge2.0-0 libatk1.0-0 libcups2 \
-                          libdbus-1-3 libgdk-pixbuf2.0-0 libnspr4 libnss3 libu2f-udev libvulkan1 xdg-utils \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Firefox and GeckoDriver
+RUN apt-get update && apt-get install -y firefox \
+    && GECKODRIVER_VERSION=$(curl -s https://api.github.com/repos/mozilla/geckodriver/releases/latest | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/') \
+    && wget -O /tmp/geckodriver.tar.gz "https://github.com/mozilla/geckodriver/releases/download/v$GECKODRIVER_VERSION/geckodriver-v$GECKODRIVER_VERSION-linux64.tar.gz" \
+    && tar -xvzf /tmp/geckodriver.tar.gz -C /usr/local/bin/ \
+    && chmod +x /usr/local/bin/geckodriver \
+    && rm /tmp/geckodriver.tar.gz \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Optional: set CI env variable for headless
+ENV CI=true
 
 # Copy compiled project
 COPY --from=build /app /app
