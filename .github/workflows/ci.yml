@@ -35,4 +35,4 @@ jobs:
       - name: Run tests
         run: mvn test -DSELENIUM_URL=http://selenium:4444/wd/hub
         env:
-        SELENIUM_URL: http://selenium:4444/wd/hub
+          SELENIUM_URL: http://selenium:4444/wd/hub
