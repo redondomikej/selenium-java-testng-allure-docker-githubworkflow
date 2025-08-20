@@ -22,16 +22,22 @@ public class BaseTest {
                 chromeOptions.addArguments("--remote-allow-origins=*");
                 chromeOptions.addArguments("--user-data-dir=/tmp/chrome-profile-" + System.currentTimeMillis());
 
-                if(headless){
+//                if(headless){
+//                    chromeOptions.addArguments("--headless=new");
+//                }
+                // Auto-detect if running in GitHub Actions
+                boolean isCI = System.getenv("GITHUB_ACTIONS") != null;
+                if (headless || isCI) {
                     chromeOptions.addArguments("--headless=new");
                 }
-                driver = new ChromeDriver(chromeOptions);
-                // Safer than maximize in Docker
+
+                // safer than maximize()
                 chromeOptions.addArguments("--window-size=1920,1080");
+                driver = new ChromeDriver(chromeOptions);
             }
             default -> throw new IllegalArgumentException("browser type not supported");
         }
-        driver.manage().window().maximize();
+//        driver.manage().window().maximize();
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
         driver.get(url);
     }
