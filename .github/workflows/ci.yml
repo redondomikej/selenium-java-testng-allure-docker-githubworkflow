@@ -26,6 +26,15 @@ jobs:
 
       - name: Build Maven Selenium Docker image
         run: docker build -t maven-selenium-test .
+          
+          # ✅ Wait for Selenium to be ready
+               - name: Wait for Selenium
+               run: |
+                 for i in {1..30}; do
+                   curl -s http://selenium:4444/wd/hub/status && break
+                   echo "Waiting for Selenium..."
+                   sleep 2
+                 done
 
       - name: Run Maven tests
         run: docker run --rm --network host -e SELENIUM_URL=http://selenium:4444/wd/hub maven-selenium-test mvn test
