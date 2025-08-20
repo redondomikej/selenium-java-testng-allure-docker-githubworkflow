@@ -5,36 +5,38 @@ on:
   schedule:
     - cron: '0 * * * *'  # At minute 0 every hour
   workflow_dispatch:      # Allows manual trigger too
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   run-tests:
     runs-on: ubuntu-latest
-    services:
-      selenium:
-        image: selenium/standalone-chrome:latest
-        ports:
-          - 4444:4444
-        options: >-
-          --shm-size=2g
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      # 1. Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # 2. Set up Docker Buildx
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Build Maven Selenium Docker image
-        run: docker build -t maven-selenium-test .
-          
-          # ✅ Wait for Selenium to be ready
-               - name: Wait for Selenium
-               run: |
-                 for i in {1..30}; do
-                   curl -s http://selenium:4444/wd/hub/status && break
-                   echo "Waiting for Selenium..."
-                   sleep 2
-                 done
+      # 3. Build Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t maven-selenium-test .
 
-      - name: Run Maven tests
-        run: docker run --rm --network host -e SELENIUM_URL=http://selenium:4444/wd/hub maven-selenium-test mvn test
+      # 4. Run Selenium tests
+      - name: Run Selenium tests
+        run: |
+          docker run --rm maven-selenium-test
+
+      # 5. Upload test results
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports/
