@@ -36,4 +36,4 @@ jobs:
         run: |
           docker run --rm \
             --env SELENIUM_URL=http://selenium:4444/wd/hub \
-            maven-selenium-test
+            selenium-java-test
