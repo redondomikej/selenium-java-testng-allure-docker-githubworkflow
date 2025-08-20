@@ -13,7 +13,8 @@ public class BaseTest {
     public void startBrowser(String browserType, boolean headless, String url){
         switch (browserType.toLowerCase()){
             case "chrome" -> {
-                WebDriverManager.chromedriver().setup();
+//                WebDriverManager.chromedriver().setup();
+                System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
                 ChromeOptions chromeOptions = new ChromeOptions();
                 // Always add Docker-friendly flags
                 chromeOptions.addArguments("--no-sandbox");
