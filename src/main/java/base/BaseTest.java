@@ -26,6 +26,8 @@ public class BaseTest {
                     chromeOptions.addArguments("--headless=new");
                 }
                 driver = new ChromeDriver(chromeOptions);
+                // Safer than maximize in Docker
+                chromeOptions.addArguments("--window-size=1920,1080");
             }
             default -> throw new IllegalArgumentException("browser type not supported");
         }
