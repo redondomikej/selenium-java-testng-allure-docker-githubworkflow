@@ -31,7 +31,8 @@ jobs:
       # 4. Run Selenium tests
       - name: Run Selenium tests
         run: |
-          docker run --rm maven-selenium-test
+          mkdir -p $GITHUB_WORKSPACE/target
+          docker run -v $GITHUB_WORKSPACE/target:/app/target maven-selenium-test
 
       # 5. Upload test results
       - name: Upload Test Results
